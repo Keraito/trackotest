@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
 <dom-module id="my-new-view">
   <!-- Defines the element's style and local DOM -->
@@ -10,11 +11,44 @@
       }
     </style>
 
-    <h1>New view</h1>
+    <h1>New view and {{theTitle}}</h1>
+    <template is="dom-repeat" items="[[repos]]">
+      <span>{{item.id}}</span>
+      <br />
+    </template>
+    <iron-ajax
+    auto
+      id="key"
+      url="../api-key.json"
+      handle-as="json"
+      last-response="{{apiKey}}"></iron-ajax>
+    <iron-ajax
+      id="requestRepos"
+      url="https://trackobot.com/profile/history.json"
+      params='{"username":"{{apiKey.username}}", "token":"{{apiKey.key}}"}'
+      handle-as="json"
+      on-response="handleResponse"></iron-ajax>
   </template>
-  <!-- Creates the elemten's prototype and registers it -->
+  <!-- Creates the element's prototype and registers it -->
   <script>
     Polymer({
-      is: 'my-new-view'
-    })
+      is: 'my-new-view',
+      properties: {
+        theTitle: {
+          type: String,
+          notify: true
+        },
+        repos: {
+          type: Array
+        }
+      },
+      ready: function () {
+        this.theTitle = "8)";
+        this.$.requestRepos.generateRequest();
+      },
+      handleResponse: function (data) {
+        this.repos = data.detail.response;
+      }
+    });
   </script>
+</dom-module>
